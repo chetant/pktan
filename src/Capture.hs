@@ -25,7 +25,8 @@ main = do
   pinf <- openLive iface 65535 True 0
   let cb pktHdr payload = do
         let (toAddx, res) = BS.splitAt 6 payload
-            (fromAddx, payload') = BS.splitAt 6 res
-        putStrLn $ "From:" ++ hexPrint fromAddx ++ " To:" ++ hexPrint toAddx
+            (fromAddx, res') = BS.splitAt 6 res
+            (ethType, payload') = BS.splitAt 2 res'
+        putStrLn $ "From:" ++ hexPrint fromAddx ++ " To:" ++ hexPrint toAddx ++ " type:" ++ hexPrint ethType
         print $ hexPrint payload'
   loopBS pinf (-1) cb

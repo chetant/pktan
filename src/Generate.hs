@@ -3,7 +3,7 @@ module Main where
 
 import Control.Monad
 import Data.Word
-import Numeric(readHex)
+import Numeric(readHex, showHex)
 import qualified Data.ByteString as BS
 
 import System.Console.CmdArgs
@@ -21,8 +21,10 @@ opts = Opts { oiface       = "enp7s0"            &= name "iface"
             , ofromEthAddx = "00:11:22:33:44:55" &= name "from"
             , otoEthAddx   = "66:77:88:99:aa:bb" &= name "to"
             , onumPkts     = 1                   &= name "numpkts"
-            , opayloadLen  = 16                  &= name "payloadlen"
+            , opayloadLen  = 64                  &= name "payloadlen"
             }
+
+hexPrint = concat . map (flip showHex "") . BS.unpack
 
 parseEthAddx :: String -> [Word8]
 parseEthAddx addx
@@ -40,7 +42,7 @@ main = do
       pktType = map (fst . head . readHex) ["08", "00"]
       pktHdr = BS.pack $ toAddx ++ fromAddx ++ pktType
   putStrLn $ "Sending " ++ show numPkts ++ " pkts on " ++ iface ++ " from " ++ (ofromEthAddx opt) ++ " to " ++ (otoEthAddx opt)
-  putStrLn $ "Header:" ++ show pktHdr ++ ", len:" ++ show (BS.length pktHdr)
+  putStrLn $ "Header:" ++ hexPrint pktHdr ++ ", len:" ++ show (BS.length pktHdr)
   let payloadLen = opayloadLen opt
       mkPayload i = BS.pack $ replicate payloadLen (fromIntegral i :: Word8)
   poutf <- openLive iface 32 False 0
